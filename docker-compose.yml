@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  discord-bot:
+    build: .
+    image: you-owe-me-money
+    environment:
+      - DISCORD_BOT_TOKEN=${TOKEN}
+    volumes:
+      - .:/opt/apps/discord-bot
+    container_name: discord-bot
+
+  db:
+    image: mariadb:latest
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${SQL_PASSWD}
+    container_name: db
