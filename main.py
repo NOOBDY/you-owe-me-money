@@ -1,7 +1,8 @@
-import discord
 from os import environ
 
-def main(): 
+import discord
+
+if __name__ == "__main__":
     intents = discord.Intents.default()
     intents.message_content = True
 
@@ -9,17 +10,14 @@ def main():
 
     @client.event
     async def on_ready():
-        print(f'We have logged in as {client.user}')
+        print(f"We have logged in as {client.user}")
 
     @client.event
     async def on_message(message):
         if message.author == client.user:
             return
 
-        if message.content.startswith('$hello'):
-            await message.channel.send('Hello!')
+        if message.content.startswith("$hello"):
+            await message.channel.send("Hello!")
 
     client.run(environ["DISCORD_BOT_TOKEN"])
-
-if __name__=='__main__':
-    main()
