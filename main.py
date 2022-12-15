@@ -5,8 +5,13 @@ import discord
 
 class UserData:
     _myself = ""  # username
+    _userID = ""  # user ID in discord
     _debtors = dict()  # for all the debtor and the total money of each
-    _records = list()
+    _records = list()  # store all the records
+
+    def __init__(self, myself, userID):
+        self._myself = myself
+        self._userID = userID
 
 
 class Record:
@@ -16,22 +21,26 @@ class Record:
     _amount = 0  # how much you lent him or her
     _info = ""  # the info of the item
 
-    def __init__(self, debtor, date, amount, info):
+    def __init__(self, myself, debtor, date, amount, info):
+        self._myself = myself
         self._debtor = debtor
         self._date = date
         self._amount = amount
         self._info = info
 
 
-def setUpUser():  # set a new record for a user
-    print("setup here")
+def setUpUser(name, ID):  # set a new record for a user
+    userID = "<@"+str(ID)+">"
+    newUser = UserData(str(name), userID)
+    send = newUser._userID + " is the new user, the whole name is "+newUser._myself
+    return send
 
 
 def newRecord(command, myself):  # append a record for a certain user
     temp = command.split()
     myself = "<@"+str(myself)+">"
-    new = Record(temp[1], temp[2], temp[3], temp[4])
-    send = new._debtor+" borrowed "+str(new._amount)+" from " + myself + " because of  " + \
+    new = Record(myself, temp[1], temp[2], temp[3], temp[4])
+    send = new._debtor+" borrowed "+str(new._amount)+" from " + new._myself + " because of  " + \
         new._info+" on "+new._date
     return send
 
@@ -64,16 +73,12 @@ if __name__ == "__main__":
         if (message.author == client.user):
             return
 
-        print(message)
-        print("======================\n")
-        print(message.content)
-
-        if (message.content[0:6] == "record"):
+        if (message.content[:6] == "record"):
             command = message.content
             await message.channel.send(newRecord(command, message.author.id))
 
         if (message.content[:4] == ("new")):
-            await message.channel.send("on progressing function new")
+            await message.channel.send(setUpUser(message.author, message.author.id))
 
         if (message.content[:6] == ("modify")):
             await message.channel.send("on progressing function modify")
