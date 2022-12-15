@@ -10,7 +10,7 @@ class UserData:
     _records = list()  # store all the records
 
     def __init__(self, myself, userID):
-        self._myself = myself
+        self._myself = str(myself)
         self._userID = userID
 
     def append_record(self, debtor, money, record):
@@ -30,7 +30,7 @@ class Record:
     _info = ""  # the info of the item
 
     def __init__(self, myself, debtor, date, amount, info):
-        self._myself = myself
+        self._myself = str(myself)
         self._debtor = debtor
         self._date = date
         self._amount = amount
@@ -80,8 +80,21 @@ def remove():  # remove the record
     print("remove here")
 
 
-def check():  # print the debt data
-    print("check here")
+def check(myself, allUsers):  # print the debt data
+    send = list()
+    temp = UserData(0, 0)
+
+    for i in range(len(allUsers)):
+        if (allUsers[i]._myself == str(myself)):
+            temp = allUsers[i]
+    if (temp._debtors == None):
+        return ("there is no data")
+
+    for key, value in temp._debtors.items():
+        m = key+"  borrowed $"+str(value)+"  from you"
+        send.append(m)
+
+    return send
 
 
 if __name__ == "__main__":
@@ -105,7 +118,6 @@ if __name__ == "__main__":
             return
 
         if (message.content[:6] == "record"):
-            # command = message.content
             await message.channel.send(newRecord(message.content, message.author.id, allUsers))
 
         if (message.content[:4] == ("new")):
@@ -118,18 +130,22 @@ if __name__ == "__main__":
             await message.channel.send("on progressing function remove")
 
         if (message.content[:5] == ("check")):
-            await message.channel.send("on progressing function check")
+            send = check(message.author, allUsers)
+
+            for i in range(len(send)):
+                await message.channel.send(send[i])
 
         # check if the data is stored
-        for item in range(len(allUsers)):
-            await message.channel.send(allUsers[item]._myself)
-            for r in range(len(allUsers[item]._records)):
-                await message.channel.send(allUsers[item]._records[r]._debtor)
-                await message.channel.send(allUsers[item]._records[r]._date)
-                await message.channel.send(allUsers[item]._records[r]._amount)
-                await message.channel.send(allUsers[item]._records[r]._info)
-                await message.channel.send("--------------------------------")
-
-            await message.channel.send(allUsers[item]._debtors[allUsers[item]._records[0]._debtor])
+        # for item in range(len(allUsers)):
+        #     await message.channel.send(allUsers[item]._myself)
+        #     for r in range(len(allUsers[item]._records)):
+        #         m = allUsers[item]._records[r]._debtor + " : " + allUsers[item]._records[
+        #             r]._date + "  $" + allUsers[item]._records[r]._amount + "  " + allUsers[item]._records[r]._info
+        #         await message.channel.send(m)
+        #     await message.channel.send("--------------------------------")
+        #     for r in range(len(allUsers[item]._debtors)):
+        #         m = allUsers[item]._records[r]._debtor+" " + \
+        #             str(allUsers[item]._debtors[allUsers[item]._records[r]._debtor])
+        #         await message.channel.send(m)
 
     client.run(environ["TOKEN"])
