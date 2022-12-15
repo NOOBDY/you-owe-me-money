@@ -13,6 +13,14 @@ class UserData:
         self._myself = myself
         self._userID = userID
 
+    def append_record(self, debtor, money, record):
+        if (debtor in self._debtors):
+            self._debtors[debtor] += int(money)
+        else:
+            self._debtors[debtor] = int(money)
+
+        self._records.append(record)
+
 
 class Record:
     _myself = ""  # username
@@ -29,24 +37,45 @@ class Record:
         self._info = info
 
 
-def setUpUser(name, ID):  # set a new record for a user
-    userID = "<@"+str(ID)+">"
-    newUser = UserData(str(name), userID)
+def setUpUser(name, ID, allUsers):  # set a new record for a user
+    for i in range(len(allUsers)):
+        if (allUsers[i]._myself == str(name)):
+            return ("account is already existed")
+
+    newUser = UserData(str(name), "<@"+str(ID)+">")
     send = newUser._userID + " is the new user, the whole name is "+newUser._myself
+    allUsers.append(newUser)
     return send
 
 
-def newRecord(command, myself):  # append a record for a certain user
+def newRecord(command, myself, allUsers):  # append a record for a certain user
     temp = command.split()
-    myself = "<@"+str(myself)+">"
-    new = Record(myself, temp[1], temp[2], temp[3], temp[4])
-    send = new._debtor+" borrowed "+str(new._amount)+" from " + new._myself + " because of  " + \
-        new._info+" on "+new._date
+    new = Record("<@"+str(myself)+">", temp[1], temp[2], temp[3], temp[4])
+    # send = new._debtor+" borrowed "+str(new._amount)+" from " + new._myself + " because of  " + \
+    #     new._info+" on "+new._date
+    send = new._date+" $"+str(new._amount)+"  " + \
+        new._info + new._debtor + " borrowed from " + new._myself
+
+    for i in range(len(allUsers)):
+        if (allUsers[i]._userID == new._myself):
+            allUsers[i].append_record(new._debtor, new._amount, new)
+            break
+
     return send
 
 
-def modify():  # modify the record
-    print("modify here")
+def modify(command, myself):  # modify the record
+    temp = command.split()
+    if (temp[1] == "-name"):
+        ...
+    elif (temp[1] == "-date"):
+        ...
+    elif (temp[1] == "sum"):
+        ...
+    elif (temp[1] == "info"):
+        ...
+
+    return ("modified successfully")
 
 
 def remove():  # remove the record
@@ -58,6 +87,8 @@ def check():  # print the debt data
 
 
 if __name__ == "__main__":
+    allUsers = list()  # store all the UserData
+
     intents = discord.Intents.default()
     intents.message_content = True
 
@@ -69,19 +100,21 @@ if __name__ == "__main__":
 
     @client.event
     async def on_message(message):
-        command = ""
+
+        print(message)
+
         if (message.author == client.user):
             return
 
         if (message.content[:6] == "record"):
-            command = message.content
-            await message.channel.send(newRecord(command, message.author.id))
+            # command = message.content
+            await message.channel.send(newRecord(message.content, message.author.id, allUsers))
 
         if (message.content[:4] == ("new")):
-            await message.channel.send(setUpUser(message.author, message.author.id))
+            await message.channel.send(setUpUser(message.author, message.author.id, allUsers))
 
         if (message.content[:6] == ("modify")):
-            await message.channel.send("on progressing function modify")
+            await message.channel.send(modify(message.content, message.author.id))
 
         if (message.content[:6] == ("remove")):
             await message.channel.send("on progressing function remove")
@@ -89,6 +122,17 @@ if __name__ == "__main__":
         if (message.content[:5] == ("check")):
             await message.channel.send("on progressing function check")
 
-    # client.run(environ["DISCORD_BOT_TOKEN"]
+        # check if the data is stored
+        for item in range(len(allUsers)):
+            await message.channel.send(allUsers[item]._myself)
+            for r in range(len(allUsers[item]._records)):
+                await message.channel.send(allUsers[item]._records[r]._debtor)
+                await message.channel.send(allUsers[item]._records[r]._date)
+                await message.channel.send(allUsers[item]._records[r]._amount)
+                await message.channel.send(allUsers[item]._records[r]._info)
+                await message.channel.send("--------------------------------")
+
+            await message.channel.send(allUsers[item]._debtors[allUsers[item]._records[0]._debtor])
+
     client.run(
         "MTA1MTAyMTc5NjM0ODAwNjQ1MQ.G2pzRn.caXY2YiXIoXEuBCUxfyaVXquPsB6WrPg9Jrcz4")
