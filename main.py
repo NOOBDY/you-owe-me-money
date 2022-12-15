@@ -51,10 +51,8 @@ def setUpUser(name, ID, allUsers):  # set a new record for a user
 def newRecord(command, myself, allUsers):  # append a record for a certain user
     temp = command.split()
     new = Record("<@"+str(myself)+">", temp[1], temp[2], temp[3], temp[4])
-    # send = new._debtor+" borrowed "+str(new._amount)+" from " + new._myself + " because of  " + \
-    #     new._info+" on "+new._date
-    send = new._date+" $"+str(new._amount)+"  " + \
-        new._info + new._debtor + " borrowed from " + new._myself
+    send = new._date+"  $"+str(new._amount)+"  " + \
+        new._info + "  " + new._debtor + " borrowed from " + new._myself
 
     for i in range(len(allUsers)):
         if (allUsers[i]._userID == new._myself):
@@ -101,7 +99,7 @@ if __name__ == "__main__":
     @client.event
     async def on_message(message):
 
-        print(message)
+        # print(message)
 
         if (message.author == client.user):
             return
@@ -134,5 +132,4 @@ if __name__ == "__main__":
 
             await message.channel.send(allUsers[item]._debtors[allUsers[item]._records[0]._debtor])
 
-    client.run(
-        "MTA1MTAyMTc5NjM0ODAwNjQ1MQ.G2pzRn.caXY2YiXIoXEuBCUxfyaVXquPsB6WrPg9Jrcz4")
+    client.run(environ["TOKEN"])
