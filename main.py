@@ -1,19 +1,27 @@
 from os import environ
 
+from discord import (Client, Intents, Message)
 import discord
 
 
-class UserData:
-    _myself = ""  # username
-    _userID = ""  # user ID in discord
-    _debtors = dict()  # for all the debtor and the total money of each
-    _records = list()  # store all the records
+class Record:
+    def __init__(self, myself: str = "", debtor: str = "", date: str = "", amount: int = 0, info: str = ""):
+        self._myself: str = myself      # username
+        self._debtor: str = debtor      # debtor who borrow money from you
+        self._date: str = date          # the date that event happened
+        self._amount: int = amount      # how much you lent him or her
+        self._info: str = info          # the info of the item
 
-    def __init__(self, myself, userID):
-        self._myself = str(myself)
-        self._userID = userID
 
-    def append_record(self, debtor, money, record):
+class User:
+    def __init__(self, myself: str = "", userID: str = ""):
+        self._myself: str = myself             # username
+        self._userID: str = userID             # user ID in discord
+        # for all the debtors and the total money of each
+        self._debtors: dict[str, int] = dict()
+        self._records: list[Record] = list()   # store all the records
+
+    def append_record(self, debtor: str, money: int, record: Record):
         if (debtor in self._debtors):
             self._debtors[debtor] += int(money)
         else:
@@ -22,36 +30,22 @@ class UserData:
         self._records.append(record)
 
 
-class Record:
-    _myself = ""  # username
-    _debtor = ""  # debtor who borrow money from you
-    _date = ""  # the date that event happened
-    _amount = 0  # how much you lent him or her
-    _info = ""  # the info of the item
-
-    def __init__(self, myself, debtor, date, amount, info):
-        self._myself = str(myself)
-        self._debtor = debtor
-        self._date = date
-        self._amount = amount
-        self._info = info
-
-
-def setUpUser(name, ID, allUsers):  # set a new record for a user
+def setUpUser(name: str, ID: int, allUsers: list):  # set a new record for a user
     for i in range(len(allUsers)):
         if (allUsers[i]._myself == str(name)):
             return ("account is already existed")
 
-    newUser = UserData(str(name), "<@"+str(ID)+">")
-    send = newUser._userID + " is the new user, the whole name is "+newUser._myself
+    newUser: User = User(str(name), "<@"+str(ID)+">")
+    send: str = newUser._userID + " is the new user, the whole name is "+newUser._myself
     allUsers.append(newUser)
     return send
 
 
-def newRecord(command, myself, allUsers):  # append a record for a certain user
-    temp = command.split()
-    new = Record("<@"+str(myself)+">", temp[1], temp[2], temp[3], temp[4])
-    send = new._date+"  $"+str(new._amount)+"  " + \
+def newRecord(command: str, ID: int, allUser: list):  # append a record for a certain user
+    temp: list = command.split()
+    new: Record = Record(
+        "<@"+str(ID)+">", temp[1], temp[2], int(temp[3]), temp[4])
+    send: str = new._date+"  $"+str(new._amount)+"  " + \
         new._info + "  " + new._debtor + " borrowed from " + new._myself
 
     for i in range(len(allUsers)):
@@ -62,7 +56,7 @@ def newRecord(command, myself, allUsers):  # append a record for a certain user
     return send
 
 
-def modify(command, myself):  # modify the record
+def modify(command: str, ID: int):  # modify the record
     temp = command.split()
     if (temp[1] == "-name"):
         ...
@@ -80,18 +74,19 @@ def remove():  # remove the record
     print("remove here")
 
 
-def check(myself, allUsers):  # print the debt data
+def check(name: str, allUsers: list):  # print the debt data
     send = list()
-    temp = UserData(0, 0)
+    temp = User()
 
     for i in range(len(allUsers)):
-        if (allUsers[i]._myself == str(myself)):
-            temp = allUsers[i]
-    if (temp._debtors == None):
+        if (allUsers[i]._myself == name):
+            temp: User = allUsers[i]
+
+    if (len(temp._debtors) == 0):
         return ("there is no data")
 
     for key, value in temp._debtors.items():
-        m = key+"  borrowed $"+str(value)+"  from you"
+        m: str = key+"  borrowed $"+str(value)+"  from you"
         send.append(m)
 
     return send
@@ -100,28 +95,31 @@ def check(myself, allUsers):  # print the debt data
 if __name__ == "__main__":
     allUsers = list()  # store all the UserData
 
-    intents = discord.Intents.default()
+    intents = Intents.default()
     intents.message_content = True
 
-    client = discord.Client(intents=intents)
+    client = Client(intents=intents)
 
     @client.event
     async def on_ready():
         print(f"We have logged in as {client.user}")
 
     @client.event
-    async def on_message(message):
+    async def on_message(message: Message):
 
         # print(message)
 
         if (message.author == client.user):
             return
 
-        if (message.content[:6] == "record"):
-            await message.channel.send(newRecord(message.content, message.author.id, allUsers))
+        args = message.content.split(" ")
 
-        if (message.content[:4] == ("new")):
-            await message.channel.send(setUpUser(message.author, message.author.id, allUsers))
+        if (args[0] == "record"):
+            await message.channel.send(newRecord(message.content, message.author.id, allUsers))
+        # func(args[1:])
+
+        if (message.content[:4] == "new"):
+            await message.channel.send(setUpUser(str(message.author), message.author.id, allUsers))
 
         if (message.content[:6] == ("modify")):
             await message.channel.send(modify(message.content, message.author.id))
@@ -130,7 +128,7 @@ if __name__ == "__main__":
             await message.channel.send("on progressing function remove")
 
         if (message.content[:5] == ("check")):
-            send = check(message.author, allUsers)
+            send = check(str(message.author), allUsers)
 
             for i in range(len(send)):
                 await message.channel.send(send[i])
