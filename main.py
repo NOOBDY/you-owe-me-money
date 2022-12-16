@@ -140,6 +140,9 @@ async def record(ctx: Context):
 
     # command[1] = userID, command[2]=amount of money, command[3]= info
     command: list = (str(ctx.message.content)).split()
+    if (len(command) != 4):
+        await ctx.send("there are some information missing, please type the instruction again")
+        return
 
     # check if the second is userID
     if not (str(command[1])[:2] == "<@" and str(command[1][-1]) == ">"):
@@ -192,6 +195,10 @@ async def modify(ctx: Context):
     # checkUserExist()
     # [1]=the thing that want to modify,[2]= userID,[3]= amount,[4]=info
     command: list = (str(ctx.message.content)).split()
+    if (len(command) != 5):
+        await ctx.send("there are some information missing, please type the instruction again")
+        return
+
     whatever = ""  # store name or amount or info
     message, index = search(command[2], int(command[3]),
                             command[4], command[1], myself)
@@ -238,6 +245,9 @@ async def remove(ctx: Context):
 
     # [1]=name,[2]=amount,[3]=info
     command: list = (str(ctx.message.content)).split()
+    if (len(command) != 4):
+        await ctx.send("there are some information missing, please type the instruction again")
+        return
 
     # remove from records
     for i in range(len(myself._records)):
