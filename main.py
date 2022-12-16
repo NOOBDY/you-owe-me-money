@@ -37,6 +37,22 @@ class User:
 
         self._records.append(record)
 
+    def modify_record(self, currentName: str, newName: str, currentAmount: int, newAmount: int):
+        # modify name, total of each person will change as well
+        if (currentName != newName):
+            # remove the wrong person's amount
+            self._debtors[currentName] -= currentAmount
+
+            # append the amount to the correct person
+            if (newName not in self._debtors):
+                self._debtors[newName] = currentAmount
+            else:
+                self._debtors[newName] += currentAmount
+
+        # modify amount, in the same person
+        elif (currentAmount != newAmount):
+            self._debtors[currentName] += (newAmount-currentAmount)
+
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -51,17 +67,7 @@ def saveRecord(record: Record, allUsers: list):  # append a record for a certain
             return (record._date+"  $"+str(record._amount)+"  "+record._info+"  "+record._debtor+" borrowed from "+allUsers[i]._userID)
 
 
-def search(debtor: str, amount: int, info: str, thing: str, name: str):
-    myself = User()
-    for i in range(len(allUsers)):
-        if (allUsers[i]._name == name):
-            myself = allUsers[i]
-            break
-
-    # if have not account
-    if (myself._name == ""):
-        return ("there is no user data of you.\nif you want to register, please type\"$new\""), -99
-
+def search(debtor: str, amount: int, info: str, thing: str, myself: User):
     for i in range(len(myself._records)):
         if (myself._records[i]._debtor == debtor and myself._records[i]._amount == amount and myself._records[i]._info == info):
             if (thing == "-n"):
@@ -75,29 +81,47 @@ def search(debtor: str, amount: int, info: str, thing: str, name: str):
     return "have no data that you mentioned", -99
 
 
-def replace(name: str, index: int, thing: str, newThing):
-    myself: int = 0
+def replace(index: int, thing: str, newThing, myself: User):
+    currentName = myself._records[index]._debtor
+    currentAmount = myself._records[index]._amount
+    if (thing == "-n"):
+        # modify $check
+        newName = newThing
+        newAmount = myself._records[index]._amount
+        myself.modify_record(currentName, newName, currentAmount, newAmount)
+        myself._records[index]._debtor = str(newThing)
+
+    elif (thing == "-m"):
+        # modify $check
+        newName = myself._records[index]._debtor
+        newAmount = newThing
+        myself.modify_record(currentName, newName, currentAmount, newAmount)
+        myself._records[index]._amount = int(newThing)
+
+    elif (thing == "-i"):
+        myself._records[index]._info = str(newThing)
+
+    return (myself._records[index]._date+"  $"+str(myself._records[index]._amount)+"  "+myself._records[index]._info+"  "+myself._records[index]._debtor+" borrowed from "+myself._userID)
+
+
+def findMyself(name: str):
+    myself: User = User()
+
     for i in range(len(allUsers)):
         if (allUsers[i]._name == name):
-            myself = i
-            break
+            myself = allUsers[i]
+            return myself
 
-    if (thing == "-n"):
-        allUsers[myself]._records[index]._debtor = str(newThing)
-    elif (thing == "-m"):
-        allUsers[myself]._records[index]._amount = int(newThing)
-    elif (thing == "-i"):
-        allUsers[myself]._records[index]._info = str(newThing)
-
-    return (allUsers[myself]._records[index]._date+"  $"+str(allUsers[myself]._records[index]._amount)+"  "+allUsers[myself]._records[index]._info+"  "+allUsers[myself]._records[index]._debtor+" borrowed from "+allUsers[myself]._userID)
+    return myself
 
 
 @bot.command()
 async def new(ctx: Context):
-    for i in range(len(allUsers)):
-        if (allUsers[i]._name == str(ctx.author)):
-            await ctx.send("the account is already exist")
-            return
+    # if account is already exist
+    myself = findMyself(str(ctx.author))
+    if (myself._name != ""):
+        await ctx.send("the account is already exist")
+        return
 
     newUser: User = User(str(ctx.author), "<@"+str(ctx.author.id)+">")
     allUsers.append(newUser)
@@ -108,6 +132,12 @@ async def new(ctx: Context):
 
 @bot.command()
 async def record(ctx: Context):
+    # if the user has no account
+    myself = findMyself(str(ctx.author))
+    if (myself._name == ""):
+        await ctx.send("there is no user data of you.\nif you want to register, please type\"$new\"")
+        return
+
     # command[1] = userID, command[2]=amount of money, command[3]= info
     command: list = (str(ctx.message.content)).split()
 
@@ -135,14 +165,8 @@ async def record(ctx: Context):
 
 @bot.command()
 async def check(ctx: Context):
-    myself: User = User()
-
-    for i in range(len(allUsers)):
-        if (allUsers[i]._name == str(ctx.author)):
-            myself = allUsers[i]
-            break
-
-    # if have not account
+    # if there is no user
+    myself = findMyself(str(ctx.author))
     if (myself._name == ""):
         await ctx.send("there is no user data of you.\nif you want to register, please type\"$new\"")
         return
@@ -160,12 +184,17 @@ async def check(ctx: Context):
 
 @bot.command()
 async def modify(ctx: Context):
+    myself = findMyself(str(ctx.author))
+    if (myself._name == ""):
+        await ctx.send("there is no user data of you.\nif you want to register, please type\"$new\"")
+        return
+
     # checkUserExist()
     # [1]=the thing that want to modify,[2]= userID,[3]= amount,[4]=info
     command: list = (str(ctx.message.content)).split()
     whatever = ""  # store name or amount or info
     message, index = search(command[2], int(command[3]),
-                            command[4], command[1], str(ctx.author))
+                            command[4], command[1], myself)
 
     await ctx.send(message)
     if (index < 0):
@@ -197,7 +226,7 @@ async def modify(ctx: Context):
     if (command[1] == "-m"):
         whatever = int(whatever)
 
-    await ctx.send(replace(str(ctx.author), index, command[1], whatever))
+    await ctx.send(replace(index, command[1], whatever, myself))
 
 
 @bot.command()
