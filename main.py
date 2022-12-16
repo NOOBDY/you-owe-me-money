@@ -231,17 +231,33 @@ async def modify(ctx: Context):
 
 @bot.command()
 async def remove(ctx: Context):
+    myself = findMyself(str(ctx.author))
+    if (myself._name == ""):
+        await ctx.send("there is no user data of you.\nif you want to register, please type\"$new\"")
+        return
 
-    ...
+    # [1]=name,[2]=amount,[3]=info
+    command: list = (str(ctx.message.content)).split()
+
+    # remove from records
+    for i in range(len(myself._records)):
+        if (myself._records[i]._debtor == command[1] and myself._records[i]._amount == int(command[2]) and myself._records[i]._info == command[3]):
+            # modify $check
+            myself._debtors[myself._records[i]._debtor] -= myself._records[i]._amount
+            myself._records.pop(i)
+            await ctx.send("remove successfully")
+            return
+
+    await ctx.send("there is no data")
 
 
 @bot.command()
 async def how(ctx: Context):
-    new = "```yaml\n$new\n```\nfor register to a new user, just type \"$new\"\n"
-    record = "```yaml\n$record\n```\nfor appending a new record of you lent other people money,type\n\n$record @user Money item\nfor example, $record @you-owe-me-money 100 dinner\n"
-    check = "```yaml\n$check\n```\nfor checking the total amount money of each person who had borrowed from you, just type \"$check\"\n"
-    modify = "```yaml\n$modify\n```on progressing\n"
-    remove = "```yaml\n$repay\n```on progressing\n"
+    new = "```yaml\n$new\n```\nfor register to a new user, just type it\n-------------------------------------------------------------------\n"
+    record = "```yaml\n$record {@user} {Money} {item}\n```\nfor appending a new record of you lent other people money,type with the format up above\nfor example, $record @you-owe-me-money 100 dinner\n-------------------------------------------------------------------\n"
+    check = "```yaml\n$check\n```\nfor checking the total amount money of each person who had borrowed from you, just type it\n-------------------------------------------------------------------\n"
+    modify = "```yaml\n$modify {-flag} {@user} {Money} {item}\n```you can modify your record by typing this, the flag can be\n\n-m, which means you want to change the amount of money\n-n,which means you want to change the debtor's name\n-i, which means you want to change to info of the item\n\nand the last three must be the same to the record that you want to modify,otherwise it can't find the record, nothing will be modified\n\nnext, the robot will ask you to type the correct information so that the record will be the correct one\n-------------------------------------------------------------------\n"
+    remove = "```yaml\n$remove {@user} {Money} {item}\n```for removing a certain record, just type the record the the last three information correctly, otherwise the robot can't find the record, there is no record will be removed\nyou can use $check you check whether it is removed or not"
     total = new+record+check+modify+remove
     await ctx.send(total)
 
