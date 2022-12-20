@@ -4,6 +4,7 @@ discord bot for almost all the functions
 
 import datetime
 import asyncio
+from textwrap import dedent
 from os import environ
 
 from discord.ext import commands
@@ -82,14 +83,14 @@ bot = commands.Bot(command_prefix="$", intents=intents)
 all_users: list[User] = list()  # store all the Users
 
 
-def save_record(record: Record, all_users: list):
+def save_record(record: Record, all_users: list) -> None:
     '''
     append a record for a certain user
     '''
     for i, user in enumerate(all_users):
         if user.name == record.name:
             all_users[i].append_record(record)
-            return record.date+"  $"+str(record.amount)+"  "+record.info+"  "+record.debtor+" borrowed from "+all_users[i]._userID
+            return record.date + "  $" + str(record.amount)+"  "+record.info+"  "+record.debtor+" borrowed from "+all_users[i].user_id
 
 
 def search(debtor: str, amount: int, info: str, thing: str, myself: User):
@@ -143,7 +144,7 @@ def find_myself(name: str):
     '''
     myself: User = User()
 
-    for i, user in enumerate(all_users):
+    for _, user in enumerate(all_users):
         if user.name == name:
             myself = user
             return myself
@@ -178,7 +179,8 @@ async def record(ctx: Context):
     # if the user has no account
     myself = find_myself(str(ctx.author))
     if myself.name == "":
-        await ctx.send("there is no user data of you.\nif you want to register, please type\"$new\"")
+        await ctx.send("there is no user data of you."
+                       "if you want to register, please type`$new`")
         return
 
     # command[1] = userID, command[2]=amount of money, command[3]= info
@@ -192,7 +194,8 @@ async def record(ctx: Context):
         await ctx.send("please tag the user to store the information of debtor")
         return
 
-    if command[2].isdigit():
+    if not command[2].isdigit():
+        print(type(command[2]))
         await ctx.send("the amount of money is invalid")
         return
 
@@ -210,7 +213,8 @@ async def check(ctx: Context):
     # if there is no user
     myself = find_myself(str(ctx.author))
     if myself.name == "":
-        await ctx.send("there is no user data of you.\nif you want to register, please type\"$new\"")
+        await ctx.send("there is no user data of you."
+                       "if you want to register, please type`$new`")
         return
 
     # if have no debtors
@@ -220,8 +224,8 @@ async def check(ctx: Context):
 
     # if all fine
     for debtor, amount in myself.debtors.items():
-        record: str = debtor+"  borrowed $"+str(amount)+"  from you"
-        await ctx.send(record)
+        each_record: str = debtor+"  borrowed $"+str(amount)+"  from you"
+        await ctx.send(each_record)
 
 
 @bot.command()
@@ -231,7 +235,8 @@ async def modify(ctx: Context):
     '''
     myself = find_myself(str(ctx.author))
     if myself.name == "":
-        await ctx.send("there is no user data of you.\nif you want to register, please type\"$new\"")
+        await ctx.send("there is no user data of you."
+                       "if you want to register, please type`$new`")
         return
 
     # checkUserExist()
@@ -279,7 +284,8 @@ async def remove(ctx: Context):
     '''
     myself = find_myself(str(ctx.author))
     if myself.name == "":
-        await ctx.send("there is no user data of you.\nif you want to register, please type\"$new\"")
+        await ctx.send("there is no user data of you."
+                       "if you want to register, please type`$new`")
         return
 
     # [1]=name,[2]=amount,[3]=info
@@ -305,35 +311,49 @@ async def how(ctx: Context):
     '''
     let user knows how to use these instructions
     '''
-    new_explain = "```yaml\n$new\n```\nfor register to a new user,\
-just type it\n-------------------------------------------------------------------\n"
+    total = dedent("""
+    ```yaml
+    $new
+    ```
+    for register to a new user, just type it
 
-    record_explain = "```yaml\n$record {@user} {Money} {item}\n```\n\
-for appending a new record of you lent other people money,type\
-with the format up above\nfor example, $record @you-owe-me-money 100 dinner\n\
--------------------------------------------------------------------\n"
+    ```yaml
+    $record {@user} {Money} {item}
+    ```
+    for appending a new record of you lent other people money,type with the format up above
+    for example, $record @you-owe-me-money 100 dinner
 
-    check_explain = "```yaml\n$check\n```\nfor checking the total amount money of \
-each person who had borrowed from you, just type it\n\
--------------------------------------------------------------------\n"
+    ```yaml
+    $check
+    ```
+    for checking the total amount money of each person who had borrowed from you, just type it
 
-    modify_explain = "```yaml\n$modify {-flag} {@user} {Money} {item}\n```you can\
-modify your record by typing this, the flag can be\n\n-m, which means you \
-want to change the amount of money\n-n,which means you want to change \
-the debtor's name\n-i, which means you want to change to info of the item\n\n\
-and the last three must be the same to the record that you want to modify,\
-otherwise it can't find the record, nothing will be modified\n\nnext,\
-the robot will ask you to type the correct information so that \
-the record will be the correct one\n------------------\
--------------------------------------------------\n"
+    ```yaml
+    $modify {-flag} {@user} {Money} {item}
+    ```
+    you can modify your record by typing this, the flag can be
 
-    remove_explain = "```yaml\n$remove {@user} {Money} {item}\n```for removing a certain record,\
-just type the record the the last three information correctly, otherwise the robot can't\
-find the record, there is no record will be removed\nyou can use \
-$check you check whether it is removed or not"
+    -m, which means you want to change the amount of money
 
-    total = new_explain+record_explain+check_explain+modify_explain+remove_explain
+    -n, which means you want to change the debtor's name
+
+    -i, which means you want to change to info of the item
+
+
+    and the last three must be the same to the record that you want to modify,
+    otherwise it can't find the record, nothing will be modified
+
+    next, the robot will ask you to type the correct information so that
+    the record will be the correct one
+
+    ```yaml
+    $remove {@user} {Money} {item}
+    ```
+    for removing a certain record, just type the record the the last three information correctly, otherwise the robot can't
+    find the record, there is no record will be removed
+    you can use $check you check whether it is removed or not
+    """)
+
     await ctx.send(total)
 
-
-bot.run(environ["TOKEN"])
+bot.run(environ["DISCORD_BOT_TOKEN"])
