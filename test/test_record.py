@@ -25,4 +25,26 @@ def test_update_record():
         Record(1, 2, 45, "alcohol")
     ]
 
-    assert all([x in list(all_records.values()) for x in target_records])
+    for record in target_records:
+        assert record in list(all_records.values())
+
+
+def test_reset():
+    """
+    test if `reset` works or not
+    """
+
+    reset()
+
+    target_records = [
+        Record(69, 420, 1200, "gatcha"),
+        Record(234, 420, 1, "nice"),
+        Record(69, 234, 60, "unit test"),
+    ]
+
+    all_records = list_records()
+
+    assert len(all_records) == 3
+
+    for record in target_records:
+        assert record in list(all_records.values())

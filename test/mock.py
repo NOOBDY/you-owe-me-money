@@ -2,7 +2,8 @@
 mock module
 """
 
-from uuid import uuid1
+import uuid
+
 from db.record import Record
 
 
@@ -11,16 +12,20 @@ MOCK_DB: dict[int, Record] = {}
 
 
 def reset() -> None:
-    global MOCK_DB
-    MOCK_DB = {
-        0: Record(69, 420, 1200, "gatcha"),
-        1: Record(234, 420, 1, "nice"),
-        2: Record(69, 234, 60, "unit test"),
-    }
+    MOCK_DB.clear()
+
+    records = [
+        Record(69, 420, 1200, "gatcha"),
+        Record(234, 420, 1, "nice"),
+        Record(69, 234, 60, "unit test"),
+    ]
+
+    for record in records:
+        add_record(record)
 
 
 def add_record(record: Record) -> None:
-    MOCK_DB[uuid1().int] = record
+    MOCK_DB[uuid.uuid1().int] = record
 
 
 def delete_record(record_id: int) -> None:
