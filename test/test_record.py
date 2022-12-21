@@ -4,7 +4,7 @@ test record
 
 from db.record import Record
 
-from .mock import (add_record, delete_record, list_records, reset)
+from .mock_utils import (add_record, delete_record, list_records, reset)
 
 
 def test_update_record():
