@@ -5,8 +5,8 @@ from os import environ
 from db.record import Record
 from supabase import create_client,Client
 
-url: str = "https://dwosibtkxkverqqwtsnp.supabase.co"
-key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3b3NpYnRreGt2ZXJxcXd0c25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzIwMzk2NDAsImV4cCI6MTk4NzYxNTY0MH0.K53kkr3OVpfT0Sw4gq5jSN60hLlZJFj7ZSdcWkUJq9s"
+url = environ["SUPABASE_URL"]
+key = environ["SUPABASE_API_KEY"]
 supabase = create_client(url, key)
 
 def add_record(record: Record) -> None:
