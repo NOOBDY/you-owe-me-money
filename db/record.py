@@ -63,3 +63,10 @@ class Record:
 
     def __eq__(self, __o: object) -> bool:
         return self.__dict__ == __o.__dict__
+
+    def RecordToDict(data):#轉換成資料庫上傳格式
+        data = data.__dict__
+        p = dict()
+        for key in data:
+            p[key[1:]]=data[key]
+        return p    
