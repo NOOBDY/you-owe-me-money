@@ -7,7 +7,7 @@ from supabase import create_client,Client
 
 url = environ["SUPABASE_URL"]
 key = environ["SUPABASE_API_KEY"]
-Client = create_client(url, key)
+supabase = create_client(url, key)
 
 def add_record(record: Record) -> None:
     try:
