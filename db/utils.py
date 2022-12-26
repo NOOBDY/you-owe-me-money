@@ -5,7 +5,7 @@ from os import environ
 from .record import Record
 from supabase import create_client,Client
 
-url = "https://dwosibtkxkverqqwtsnp.supabase.co"
+url = environ["SUPABASE_URL"]
 key = environ["SUPABASE_API_KEY"]
 Client = create_client(url, key)
 
