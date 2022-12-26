@@ -25,7 +25,10 @@ def delete_record(record_id: int) -> None:
 
 def find_record(record_id: int) -> Record:
     try:
-        return supabase.table("Record").select("*").filter("record_id", "eq", record_id).execute()
+        res = supabase.table("Record").select("*").filter("record_id", "eq", record_id).execute()
+        if len(res)==0:
+            return None
+        return res[0]
     except:
         pass
     return None    
