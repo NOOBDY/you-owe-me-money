@@ -3,9 +3,11 @@ utils module
 """
 from os import environ
 from .record import Record
-url: str = "https://dwosibtkxkverqqwtsnp.supabase.co"
-key: str = environ["SUPABASE_API_KEY"]
-supabase: Client = create_client(url, key)
+from supabase import create_client,Client
+
+url = "https://dwosibtkxkverqqwtsnp.supabase.co"
+key = environ["SUPABASE_API_KEY"]
+Client = create_client(url, key)
 
 def add_record(record: Record) -> None:
     try:
