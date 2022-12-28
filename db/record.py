@@ -15,14 +15,14 @@ class Record:
 
     def __init__(self, creditor_id: int, debtor_id: int,
                  amount: int, title: str, detail: str = "",
-                 due_date: datetime | None = None):
+                 due_date: datetime | None = None,reocrd_id:int=None):
         self._creditor_id = creditor_id
         self._debtor_id = debtor_id
         self._amount = amount
         self._title = title
         self._detail = detail
         self._due_date = due_date
-        self._record_id=None
+        self._record_id=reocrd_id
         self._created_on=None
         self._modified_on=None
 
@@ -44,6 +44,9 @@ class Record:
 
     def get_due_date(self) -> datetime|None:
         return self._due_date
+
+    def get_record_id(self) -> int:
+        return self._record_id 
 
     def set_debtor_id(self, debtor_id: int) -> None:
         self._debtor_id = debtor_id
