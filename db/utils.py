@@ -11,18 +11,20 @@ url = environ["SUPABASE_URL"]
 key = environ["SUPABASE_API_KEY"]
 supabase = Client(url, key)
 
+TABLE = "Test Record"
+
 
 def add_record(record: Record) -> None:
     try:
-        supabase.table("Record").insert(record.RecordToDict()).execute()
-    except:
-        pass
+        supabase.table(TABLE).insert(record.RecordToDict()).execute()
+    except Exception as e:
+        print(e)
     return None
 
 
 def delete_record(record_id: int) -> None:
     try:
-        supabase.table("Record").delete().filter("record_id", "eq", record_id).execute()
+        supabase.table(TABLE).delete().filter("record_id", "eq", record_id).execute()
     except:
         pass
     return None
@@ -30,7 +32,8 @@ def delete_record(record_id: int) -> None:
 
 def find_record(record_id: int) -> Record:
     try:
-        res = supabase.table("Record").select("*").filter("record_id", "eq", record_id).execute().data
+        res = supabase.table(TABLE).select("*").filter("record_id", "eq", record_id).execute().data
+        print(res)
         if len(res) == 0:
             return None
         return DictToReocrd(res[0])
@@ -42,7 +45,7 @@ def find_record(record_id: int) -> Record:
 def creditor_records(creditor_id: int) -> list[Record]:
     try:
         return [DictToReocrd(temp) for temp in
-                supabase.table("Record").select("*").filter("creditor_id", "eq", creditor_id).execute().data]
+                supabase.table(TABLE).select("*").filter("creditor_id", "eq", creditor_id).execute().data]
     except:
         pass
     return None
@@ -55,12 +58,13 @@ def debtor_records(debtor_id: int) -> list[Record]:
         pass
     return None
 
+
 def update_records(record: Record) -> None:
     try:
-        supabase.table("Record").update(record.RecordToDictFull()).filter("record_id", "eq",record.get_record_id()).execute()
+        supabase.table(TABLE).update(record.RecordToDictFull()).filter("record_id", "eq", record.get_record_id()).execute()
     except:
         pass
-    return None    
+    return None
 
 
 def DictToReocrd(data):  # 轉換成record格式
@@ -74,4 +78,4 @@ def DictToReocrd(data):  # 轉換成record格式
     created_on = data["created_on"]
     cleared_on = data["cleared_on"]
     modified_on = data["modified_on"]
-    return Record(creditor_id, debtor_id, amount, title, detail, due_date, record_id,created_on,cleared_on,modified_on)
+    return Record(creditor_id, debtor_id, amount, title, detail, due_date, record_id, created_on, cleared_on, modified_on)
