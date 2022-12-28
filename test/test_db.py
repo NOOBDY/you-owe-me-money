@@ -27,6 +27,6 @@ def test_update():
     before = creditor_records(345)
     before[-1].clear()
     update_records(before[-1])
-    after = creditor_records(345)
-    assert after[-1].__dict__["_cleared_on"] == str(date.today())
+    after = find_record(before[-1].get_record_id())
+    assert after.__dict__["_cleared_on"] == str(date.today())
 
