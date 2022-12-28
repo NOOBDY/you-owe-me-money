@@ -24,6 +24,7 @@ class Record:
         self._due_date = due_date
         self._record_id=reocrd_id
         self._created_on=None
+        self._cleared_on=None
         self._modified_on=None
 
 
@@ -81,4 +82,5 @@ class Record:
         p.pop('created_on')
         p.pop('due_date')
         p.pop('modified_on')
+        p.pop('cleared_on')
         return p
