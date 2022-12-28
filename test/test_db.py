@@ -28,3 +28,5 @@ def Test_delete():
     delete_record(before[-1].get_record_id())
     after = creditor_records(345)
     assert len(before) == len(after)+1    
+Test_Upload()
+Test_delete()    
