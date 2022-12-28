@@ -15,17 +15,17 @@ class Record:
 
     def __init__(self, creditor_id: int, debtor_id: int,
                  amount: int, title: str, detail: str = "",
-                 due_date: datetime | None = None,reocrd_id:int=None):
+                 due_date: datetime | None = None, record_id: str = None,created_on:str = None,cleared_on:str = None,modified_on:str = None):
         self._creditor_id = creditor_id
         self._debtor_id = debtor_id
         self._amount = amount
         self._title = title
         self._detail = detail
         self._due_date = due_date
-        self._record_id=reocrd_id
-        self._created_on=None
-        self._cleared_on=None
-        self._modified_on=None
+        self._record_id = record_id
+        self._created_on = created_on
+        self._cleared_on = cleared_on
+        self._modified_on = modified_on
 
 
     def get_creditor_id(self) -> int:
@@ -68,7 +68,7 @@ class Record:
         update_records(self)
 
     def clear(self) -> None:
-        self._cleared_on = date.today()
+        self._cleared_on = str(date.today())
 
     def __eq__(self, __o: object) -> bool:
         return self.__dict__ == __o.__dict__

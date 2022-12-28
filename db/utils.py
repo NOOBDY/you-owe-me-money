@@ -56,7 +56,7 @@ def debtor_records(debtor_id: int) -> list[Record]:
 
 def update_records(record: Record) -> None:
     try:
-        return supabase.table("Record").update(record.RecordToDictFull()).filter("record_id", "eq",record.get_record_id()).execute()
+        supabase.table("Record").update(record.RecordToDictFull()).filter("record_id", "eq",record.get_record_id()).execute()
     except:
         pass
     return None    
@@ -70,4 +70,7 @@ def DictToReocrd(data):  # 轉換成record格式
     detail = data["detail"]
     due_date = data["due_date"]
     record_id = data["record_id"]
-    return Record(creditor_id, debtor_id, amount, title, detail, due_date, record_id)
+    created_on = data["created_on"]
+    cleared_on = data["cleared_on"]
+    modified_on = data["modified_on"]
+    return Record(creditor_id, debtor_id, amount, title, detail, due_date, record_id,created_on,cleared_on,modified_on)
