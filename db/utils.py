@@ -2,12 +2,15 @@
 utils module
 """
 from os import environ
+
+from supabase.client import Client
+
 from db.record import Record
-from supabase import create_client,Client
 
 url = environ["SUPABASE_URL"]
 key = environ["SUPABASE_API_KEY"]
-supabase = create_client(url, key)
+supabase = Client(url, key)
+
 
 def add_record(record: Record) -> None:
     try:
@@ -16,6 +19,7 @@ def add_record(record: Record) -> None:
         pass
     return None
 
+
 def delete_record(record_id: int) -> None:
     try:
         supabase.table("Record").delete().filter("record_id", "eq", record_id).execute()
@@ -23,22 +27,25 @@ def delete_record(record_id: int) -> None:
         pass
     return None
 
+
 def find_record(record_id: int) -> Record:
     try:
         res = supabase.table("Record").select("*").filter("record_id", "eq", record_id).execute().data
-        if len(res)==0:
+        if len(res) == 0:
             return None
         return DictToReocrd(res[0])
     except:
         pass
     return None
 
+
 def creditor_records(creditor_id: int) -> list[Record]:
     try:
-        return [DictToReocrd(temp)for temp in supabase.table("Record").select("*").filter("creditor_id", "eq",creditor_id).execute().data]
+        return [DictToReocrd(temp)for temp in supabase.table("Record").select("*").filter("creditor_id", "eq", creditor_id).execute().data]
     except:
         pass
     return None
+
 
 def debtor_records(debtor_id: int) -> list[Record]:
     try:
@@ -56,4 +63,4 @@ def DictToReocrd(data):  # 轉換成record格式
     detail = data["detail"]
     due_date = data["due_date"]
     record_id = data["record_id"]
-    return Record(creditor_id, debtor_id,amount, title, detail,due_date,record_id)
+    return Record(creditor_id, debtor_id, amount, title, detail, due_date, record_id)

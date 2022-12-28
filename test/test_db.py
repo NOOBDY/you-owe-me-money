@@ -1,23 +1,29 @@
-from db.utils import add_record,creditor_records,delete_record
+from db.utils import add_record, creditor_records, delete_record
 from db.record import Record
-def Test_Upload():
-    data = Record(345, 420, 1200, "gatcha")
-    before = creditor_records(345)
-    add_record(data)
-    after = creditor_records(345)
-    assert len(before)==len(after)-1
-def Test_delete():
-    data = Record(345, 420, 1200, "gatcha")
-    before = creditor_records(345)
-    add_record(data)
-    after = creditor_records(345)
-    assert len(before)==len(after)-1 
 
-    before = creditor_records(345)   
+
+def test_upload():
+    data = Record(345, 420, 1200, "gatcha")
+    before = creditor_records(345)
+    add_record(data)
+    after = creditor_records(345)
+    assert len(before) == len(after)-1
+
+
+def test_delete1():
+    data = Record(345, 420, 1200, "gatcha")
+    before = creditor_records(345)
+    add_record(data)
+    after = creditor_records(345)
+    assert len(before) == len(after)-1
+
+    before = creditor_records(345)
     delete_record(after[-1].get_record_id())
     after = creditor_records(345)
-    assert len(before)==len(after)-1    
-def Test_delete():
+    assert len(before) == len(after)-1
+
+
+def test_delete2():
     data = Record(345, 420, 1200, "gatcha")
     before = creditor_records(345)
     add_record(data)
@@ -27,6 +33,4 @@ def Test_delete():
     before = creditor_records(345)
     delete_record(before[-1].get_record_id())
     after = creditor_records(345)
-    assert len(before) == len(after)+1    
-Test_Upload()
-Test_delete()    
+    assert len(before) == len(after)+1
