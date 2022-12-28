@@ -89,9 +89,4 @@ class Record:
         p = dict()
         for key in data:
             p[key[1:]]=data[key]
-        p.pop('record_id')
-        p.pop('created_on')
-        p.pop('due_date')
-        p.pop('modified_on')
-        p.pop('_cleared_on')
         return p    
