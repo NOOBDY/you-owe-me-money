@@ -2,7 +2,7 @@
 record module
 """
 
-from datetime import datetime
+from datetime import date
 from db.utils import update_records,delete_record
 
 class Record:
@@ -68,7 +68,7 @@ class Record:
         update_records(self)
 
     def clear(self) -> None:
-        delete_record(self.get_record_id())
+        self._cleared_on = date.today()
 
     def __eq__(self, __o: object) -> bool:
         return self.__dict__ == __o.__dict__
