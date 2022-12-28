@@ -10,7 +10,7 @@ def test_upload():
     assert len(before) == len(after)-1
 
 
-def test_delete1():
+def test_delete():
     data = Record(345, 420, 1200, "gatcha")
     before = creditor_records(345)
     add_record(data)
@@ -23,14 +23,3 @@ def test_delete1():
     assert len(before) == len(after)+1
 
 
-def test_delete2():
-    data = Record(345, 420, 1200, "gatcha")
-    before = creditor_records(345)
-    add_record(data)
-    after = creditor_records(345)
-    assert len(before) == len(after) - 1
-
-    before = creditor_records(345)
-    delete_record(before[-1].get_record_id())
-    after = creditor_records(345)
-    assert len(before) == len(after)+1
