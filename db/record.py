@@ -3,7 +3,7 @@ record module
 """
 
 from datetime import date
-from db.utils import update_records,delete_record
+#from db.utils import update_records,delete_record
 
 class Record:
     """
@@ -65,7 +65,8 @@ class Record:
         self._due_date = due_date
 
     def apply_update(self) -> None:
-        update_records(self)
+        ...
+        #update_records(self)
 
     def clear(self) -> None:
         self._cleared_on = str(date.today())
