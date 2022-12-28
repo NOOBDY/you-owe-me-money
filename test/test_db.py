@@ -1,4 +1,4 @@
-from db.utils import add_record, creditor_records, delete_record
+from db.utils import add_record, creditor_records, delete_record,update_records
 from db.record import Record
 from datetime import date
 
@@ -26,7 +26,7 @@ def test_update():
     add_record(data)
     before = creditor_records(345)
     before[-1].clear()
-    before[-1].apply_update()
+    update_records(before[-1])
     after = creditor_records(345)
     assert after[-1].__dict__["_cleared_on"] == str(date.today())
 
