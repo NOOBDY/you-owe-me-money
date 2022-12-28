@@ -41,7 +41,8 @@ def find_record(record_id: int) -> Record:
 
 def creditor_records(creditor_id: int) -> list[Record]:
     try:
-        supabase.table("Record").select("*").filter("creditor_id", "eq", creditor_id).execute().data
+        return [DictToReocrd(temp) for temp in
+                supabase.table("Record").select("*").filter("creditor_id", "eq", creditor_id).execute().data]
     except:
         pass
     return None
