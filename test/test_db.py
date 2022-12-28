@@ -20,7 +20,7 @@ def test_delete1():
     before = creditor_records(345)
     delete_record(after[-1].get_record_id())
     after = creditor_records(345)
-    assert len(before) == len(after)-1
+    assert len(before) == len(after)+1
 
 
 def test_delete2():
