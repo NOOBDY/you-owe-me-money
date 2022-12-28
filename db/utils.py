@@ -56,4 +56,4 @@ def DictToReocrd(data):  # 轉換成record格式
     detail = data["detail"]
     due_date = data["due_date"]
     record_id = data["record_id"]
-    return Record(creditor_id, debtor_id,amount, title, detail,due_date)
+    return Record(creditor_id, debtor_id,amount, title, detail,due_date,record_id)
