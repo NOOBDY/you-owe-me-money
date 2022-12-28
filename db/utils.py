@@ -41,7 +41,7 @@ def find_record(record_id: int) -> Record:
 
 def creditor_records(creditor_id: int) -> list[Record]:
     try:
-        return [DictToReocrd(temp)for temp in supabase.table("Record").select("*").filter("creditor_id", "eq", creditor_id).execute().data]
+        supabase.table("Record").select("*").filter("creditor_id", "eq", creditor_id).execute().data
     except:
         pass
     return None
@@ -53,6 +53,13 @@ def debtor_records(debtor_id: int) -> list[Record]:
     except:
         pass
     return None
+
+def update_records(record: Record) -> None:
+    try:
+        return [DictToReocrd(temp)for temp in supabase.table("Record").update(record.RecordToDictFull()).filter("record_id", "eq",record.get_record_id()).execute().data]
+    except:
+        pass
+    return None    
 
 
 def DictToReocrd(data):  # 轉換成record格式

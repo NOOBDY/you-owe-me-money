@@ -3,7 +3,7 @@ record module
 """
 
 from datetime import datetime
-
+from db.utils import update_records,delete_record
 
 class Record:
     """
@@ -65,10 +65,10 @@ class Record:
         self._due_date = due_date
 
     def apply_update(self) -> None:
-        ...
+        update_records(self)
 
     def clear(self) -> None:
-        ...
+        delete_record(self.get_record_id())
 
     def __eq__(self, __o: object) -> bool:
         return self.__dict__ == __o.__dict__
@@ -84,3 +84,14 @@ class Record:
         p.pop('modified_on')
         p.pop('cleared_on')
         return p
+    def RecordToDictFull(data):#轉換成資料庫上傳格式
+        data = data.__dict__
+        p = dict()
+        for key in data:
+            p[key[1:]]=data[key]
+        p.pop('record_id')
+        p.pop('created_on')
+        p.pop('due_date')
+        p.pop('modified_on')
+        p.pop('_cleared_on')
+        return p    
