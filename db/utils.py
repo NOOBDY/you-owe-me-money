@@ -56,7 +56,7 @@ def debtor_records(debtor_id: int) -> list[Record]:
 
 def update_records(record: Record) -> None:
     try:
-        return [DictToReocrd(temp)for temp in supabase.table("Record").update(record.RecordToDictFull()).filter("record_id", "eq",record.get_record_id()).execute().data]
+        return supabase.table("Record").update(record.RecordToDictFull()).filter("record_id", "eq",record.get_record_id()).execute()
     except:
         pass
     return None    
