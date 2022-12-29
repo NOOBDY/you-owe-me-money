@@ -32,7 +32,7 @@ async def add(ctx: Context):
     '''
     command: list = (str(ctx.message.content)).split()
     if len(command) < 4:
-        await ctx.send("there are some information missing, please type the instruction again")
+        await ctx.send("there are some information missing, please type the instruction again.")
         return
 
     # check if the second is userID
@@ -68,6 +68,7 @@ async def add(ctx: Context):
     # print(list_records().keys(), list_records().items().get_debtor_id())
 
     await ctx.send(toClient)
+    return
 
 
 @bot.command()
@@ -129,6 +130,7 @@ async def modify(ctx: Context):
     ), record.get_title(), ("<@"+str(record.get_debtor_id())+">"), ("<@"+str(record.get_creditor_id())+">"))
 
     await ctx.send(toClient)
+
     print(list_records())
     a = list(list_records().values())
     for i in range(len(a)):
@@ -151,7 +153,7 @@ async def remove(ctx: Context):
 
     command: list = (str(ctx.message.content)).split()
     if len(command) != 2:
-        await ctx.send("there are some information missing, please type the instruction again")
+        await ctx.send("there are some information missing, please type the instruction again?")
         return
 
     # record: Record = find_record(int(command[1]))
@@ -167,7 +169,7 @@ async def clear(ctx: Context):
     '''
     command: list = (str(ctx.message.content)).split()
     if len(command) != 2:
-        await ctx.send("there are some information missing, please type the instruction again")
+        await ctx.send("there are some information missing, please type the instruction again...")
         return
 
     # record: Record = find_record(int(command[1]))
