@@ -1,6 +1,12 @@
-from db.utils import add_record, creditor_records, delete_record, update_records, find_record
-from db.record import Record
+"""
+test real DB
+"""
+
 from datetime import date
+
+from db.utils import add_record, creditor_records, delete_record, update_records, find_record
+
+from db.record import Record
 
 
 def test_upload():
@@ -8,7 +14,7 @@ def test_upload():
     before = creditor_records(345)
     add_record(data)
     after = creditor_records(345)
-    assert len(before) == len(after)-1
+    assert len(before) == len(after) - 1
 
 
 def test_delete():
@@ -16,12 +22,12 @@ def test_delete():
     before = creditor_records(345)
     add_record(data)
     after = creditor_records(345)
-    assert len(before) == len(after)-1
+    assert len(before) == len(after) - 1
 
     before = creditor_records(345)
     delete_record(after[-1].get_record_id())
     after = creditor_records(345)
-    assert len(before) == len(after)+1
+    assert len(before) == len(after) + 1
 
 
 def test_update():

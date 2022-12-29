@@ -16,7 +16,7 @@ TABLE = "Test Record"
 
 def add_record(record: Record) -> None:
     try:
-        supabase.table(TABLE).insert(record.RecordToDict()).execute()
+        supabase.table(TABLE).insert(record.record_to_dict()).execute()
     except Exception as e:
         print(e)
     return None
@@ -24,7 +24,7 @@ def add_record(record: Record) -> None:
 
 def delete_record(record_id: int) -> None:
     try:
-        supabase.table(TABLE).delete().filter("record_id", "eq", record_id).execute()
+        supabase.table(TABLE).delete().filter("record_id", "eq", str(record_id)).execute()
     except:
         pass
     return None
@@ -32,11 +32,11 @@ def delete_record(record_id: int) -> None:
 
 def find_record(record_id: int) -> Record:
     try:
-        res = supabase.table(TABLE).select("*").filter("record_id", "eq", record_id).execute().data
+        res = supabase.table(TABLE).select("*").filter("record_id", "eq", str(record_id)).execute().data
         print(res)
         if len(res) == 0:
             return None
-        return DictToReocrd(res[0])
+        return dict_to_record(res[0])
     except:
         pass
     return None
@@ -44,8 +44,8 @@ def find_record(record_id: int) -> Record:
 
 def creditor_records(creditor_id: int) -> list[Record]:
     try:
-        return [DictToReocrd(temp) for temp in
-                supabase.table(TABLE).select("*").filter("creditor_id", "eq", creditor_id).execute().data]
+        return [dict_to_record(temp) for temp in
+                supabase.table(TABLE).select("*").filter("creditor_id", "eq", str(creditor_id)).execute().data]
     except:
         pass
     return None
@@ -53,7 +53,7 @@ def creditor_records(creditor_id: int) -> list[Record]:
 
 def debtor_records(debtor_id: int) -> list[Record]:
     try:
-        return [DictToReocrd(temp)for temp in supabase.table("Record").select("*").filter("debtor_id", "eq", debtor_id).execute().data]
+        return [dict_to_record(temp)for temp in supabase.table("Record").select("*").filter("debtor_id", "eq", debtor_id).execute().data]
     except:
         pass
     return None
@@ -61,13 +61,13 @@ def debtor_records(debtor_id: int) -> list[Record]:
 
 def update_records(record: Record) -> None:
     try:
-        supabase.table(TABLE).update(record.RecordToDictFull()).filter("record_id", "eq", record.get_record_id()).execute()
+        supabase.table(TABLE).update(record.record_to_dict_full()).filter("record_id", "eq", record.get_record_id()).execute()
     except:
         pass
     return None
 
 
-def DictToReocrd(data):  # 轉換成record格式
+def dict_to_record(data):  # 轉換成record格式
     creditor_id = data["creditor_id"]
     debtor_id = data["debtor_id"]
     amount = data["amount"]
