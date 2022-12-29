@@ -12,186 +12,34 @@ from discord.ext.commands import Context
 from discord import Message
 import discord
 
-
-class Record:
-    '''
-    to store the information of one record
-    '''
-
-    def __init__(self, name: str = "", debtor: str = "", date: str = "",
-                 amount: int = 0, info: str = ""):
-        self.name = name               # username
-        self.debtor: str = debtor      # debtor who borrow money from you
-        self.date: str = date          # the date that event happened
-        self.amount: int = amount      # how much you lent him or her
-        self.info: str = info          # the info of the item
-
-    def print_record(self):
-        '''
-        print one record
-        '''
-        print(self.date+"  $"+str(self.amount)+"  "+self.info +
-              "  "+self.debtor+" borrowed from "+self.name)
-
-
-class User:
-    '''
-    to store the data of each user
-    '''
-
-    def __init__(self, name: str = "", user_id: str = ""):
-        self.name = name                      # username
-        self.user_id = user_id                  # user ID in discord
-        # for all the debtors and the total money of each
-        self.debtors: dict[str, int] = dict()
-        self.records: list[Record] = list()           # store all the records
-
-    def append_record(self, record: Record):
-        '''
-        append record to the list:records and calculate the total amount of money of each
-        '''
-        if record.debtor in self.debtors:
-            self.debtors[record.debtor] += record.amount
-        else:
-            self.debtors[record.debtor] = record.amount
-
-        self.records.append(record)
-
-    def modify_record(self, current_name: str, new_name: str, current_amount: int, new_amount: int):
-        '''
-        to modify the value of dict:debtors
-        '''
-        # modify name, total of each person will change as well
-        if current_name != new_name:
-            # remove the wrong person's amount
-            self.debtors[current_name] -= current_amount
-
-            # append the amount to the correct person
-            if new_name not in self.debtors:
-                self.debtors[new_name] = current_amount
-            else:
-                self.debtors[new_name] += current_amount
-
-        # modify amount, in the same person
-        if current_amount != new_amount:
-            self.debtors[current_name] += (new_amount-current_amount)
+import command
+from db.record import Record
+from test.mock_utils import reset, add_record, delete_record, list_records, find_record
 
 
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="$", intents=intents)
-all_users: list[User] = list()  # store all the Users
-
-
-def save_record(record: Record, all_users: list) -> None:
-    '''
-    append a record for a certain user
-    '''
-    for i, user in enumerate(all_users):
-        if user.name == record.name:
-            all_users[i].append_record(record)
-            return record.date + "  $" + str(record.amount)+"  "+record.info+"  "+record.debtor+" borrowed from "+all_users[i].user_id
-
-
-def search(debtor: str, amount: int, info: str, thing: str, myself: User):
-    '''
-    to search for the certain record we are finding
-    '''
-    for i, user in enumerate(myself.records):
-        if user.debtor == debtor and user.amount == amount and user.info == info:
-            if thing == "-n":
-                return "please type new name for modifying", i
-            if thing == "-m":
-                return "please type new amount of money for modifying", i
-            if thing == "-i":
-                return "please type new info for modifying", i
-            break
-
-    return "have no data that you mentioned", -99
-
-
-def replace(index: int, thing: str, new_thing, myself: User):
-    '''
-    to change to wrong value to the correct value
-    '''
-    current_name = myself.records[index].debtor
-    current_amount = myself.records[index].amount
-    if thing == "-n":
-        # modify $check
-        new_name = new_thing
-        new_amount = myself.records[index].amount
-        myself.modify_record(current_name, new_name,
-                             current_amount, new_amount)
-        myself.records[index].debtor = str(new_thing)
-
-    elif thing == "-m":
-        # modify $check
-        new_name = myself.records[index].debtor
-        new_amount = new_thing
-        myself.modify_record(current_name, new_name,
-                             current_amount, new_amount)
-        myself.records[index].amount = int(new_thing)
-
-    elif thing == "-i":
-        myself.records[index].info = str(new_thing)
-
-    return myself.records[index].date+"  $"+str(myself.records[index].amount)+"  "+myself.records[index].info+"  "+myself.records[index].debtor+" borrowed from "+myself.user_id
-
-
-def find_myself(name: str):
-    '''
-    find the user in the whole user list
-    '''
-    myself: User = User()
-
-    for _, user in enumerate(all_users):
-        if user.name == name:
-            myself = user
-            return myself
-
-    return myself
+# all_users: list[User] = list()  # store all the Users
 
 
 @bot.command()
-async def new(ctx: Context):
-    '''
-    to create a new account for user
-    '''
-    # if account is already exist
-    myself = find_myself(str(ctx.author))
-    if myself.name != "":
-        await ctx.send("the account is already exist")
-        return
-
-    new_user: User = User(str(ctx.author), "<@"+str(ctx.author.id)+">")
-    all_users.append(new_user)
-
-    message: str = new_user.user_id + \
-        " is the new user, the whole name is "+new_user.name
-    await ctx.send(message)
-
-
-@bot.command()
-async def record(ctx: Context):
+async def add(ctx: Context):
     '''
     to make a new record
+    $add <debtor-id> <amount> <title> [detail]
+    $add @TYK 900 玩具
     '''
-    # if the user has no account
-    myself = find_myself(str(ctx.author))
-    if myself.name == "":
-        await ctx.send("there is no user data of you."
-                       "if you want to register, please type`$new`")
-        return
-
-    # command[1] = userID, command[2]=amount of money, command[3]= info
     command: list = (str(ctx.message.content)).split()
-    if len(command) != 4:
+    if len(command) < 4:
         await ctx.send("there are some information missing, please type the instruction again")
         return
 
     # check if the second is userID
-    if not (str(command[1])[:2] == "<@" and str(command[1][-1]) == ">"):
-        await ctx.send("please tag the user to store the information of debtor")
+    if len(ctx.message.mentions) == 1:
+        member_id = (ctx.message.mentions[0]).id
+    else:
+        await ctx.send("please tag only the user to store the information of debtor")
         return
 
     if not command[2].isdigit():
@@ -199,33 +47,43 @@ async def record(ctx: Context):
         await ctx.send("the amount of money is invalid")
         return
 
-    # if all fine
-    new_record: Record = Record(str(ctx.author), command[1], str(
-        datetime.date.today()), int(command[2]), str(command[3]))
-    await ctx.send(save_record(new_record, all_users))
+    new_record: Record = Record(
+        ctx.message.author.id, member_id, int(command[2]), command[3])
+
+    toClient: str = "%s $%i %s %s borrowed from %s" % (str(datetime.date.today()), new_record.get_amount(
+    ), new_record.get_title(), ("<@"+str(new_record.get_debtor_id())+">"), ("<@"+str(new_record.get_creditor_id())+">"))
+    # record.date + "  $" + str(record.amount)+"  "+record.info+"  "+record.debtor+" borrowed from "+all_users[i].user_id
+    add_record(new_record)
+    print(list_records())
+    # print(list_records().keys(), list_records().values()[0].get_amount())
+    # print()
+    a = list(list_records().values())
+    for i in range(len(a)):
+        print(a[i].get_creditor_id(), a[i].get_debtor_id(),
+              a[i].get_amount(), a[i].get_title())
+    # print(list_records().keys(), list_records().values())
+
+    # print(list_records().keys(), list_records().items().get_creditor_id())
+
+    # print(list_records().keys(), list_records().items().get_debtor_id())
+
+    await ctx.send(toClient)
 
 
 @bot.command()
-async def check(ctx: Context):
+async def to_me(ctx: Context):
     '''
-    to check to total amount of money of each debtors
+    who borrowed money from me
     '''
-    # if there is no user
-    myself = find_myself(str(ctx.author))
-    if myself.name == "":
-        await ctx.send("there is no user data of you."
-                       "if you want to register, please type`$new`")
-        return
+    ...
 
-    # if have no debtors
-    if len(myself.debtors) == 0:
-        await ctx.send("there is no debtors")
-        return
 
-    # if all fine
-    for debtor, amount in myself.debtors.items():
-        each_record: str = debtor+"  borrowed $"+str(amount)+"  from you"
-        await ctx.send(each_record)
+@bot.command()
+async def to_others(ctx: Context):
+    '''
+    I borrowed money form whom
+    '''
+    ...
 
 
 @bot.command()
@@ -233,48 +91,56 @@ async def modify(ctx: Context):
     '''
     can modify name, amount of money, or item info
     '''
-    myself = find_myself(str(ctx.author))
-    if myself.name == "":
-        await ctx.send("there is no user data of you."
-                       "if you want to register, please type`$new`")
-        return
 
     # checkUserExist()
-    # [1]=the thing that want to modify,[2]= userID,[3]= amount,[4]=info
+    # [1]=record ID,[2]= name/amount/info,[3]= value
     command: list = (str(ctx.message.content)).split()
-    if len(command) != 5:
+    if len(command) != 4:
         await ctx.send("there are some information missing, please type the instruction again")
         return
 
-    whatever = ""  # store name or amount or info
-    message, index = search(command[2], int(command[3]),
-                            command[4], command[1], myself)
+    record: Record = find_record(int(command[1]))
 
-    await ctx.send(message)
-    if index < 0:
+    whatever = command[3]  # store name or amount or info
+    if (command[2] == "name"):
+        if len(ctx.message.mentions) == 1:
+            member_id = (ctx.message.mentions[0]).id
+        else:
+            await ctx.send("please tag only the user to store the information of debtor")
+            return
+        record.set_debtor_id(member_id)
+
+    elif (command[2] == "amount"):
+        if not whatever.isdigit():
+            await ctx.send("the amount of money is invalid")
+            return
+        else:
+            whatever = int(whatever)
+        record.set_amount(whatever)
+
+    elif (command[2] == "info"):
+        record.set_title(whatever)
+
+    else:
+        await ctx.send("we don't know what you want to modify")
         return
 
-    try:
-        answer: Message = await bot.wait_for('message', timeout=10.0)
-    except asyncio.TimeoutError:
-        await ctx.send("out of the time, please try again from the beginning")
-    else:
-        # check if the second message was sent by the same person
-        #      second message      first message
-        while answer.author != ctx.message.author:
-            try:
-                answer: Message = await bot.wait_for('message', timeout=10.0)
-            except asyncio.TimeoutError:
-                await ctx.send("out of the time, please try again from the beginning")
-            else:
-                whatever = str(answer.content)
+    toClient: str = "modified:\n%s $%i %s %s borrowed from %s" % (str(datetime.date.today()), record.get_amount(
+    ), record.get_title(), ("<@"+str(record.get_debtor_id())+">"), ("<@"+str(record.get_creditor_id())+">"))
 
-        whatever = str(answer.content)
+    await ctx.send(toClient)
+    print(list_records())
+    a = list(list_records().values())
+    for i in range(len(a)):
+        print(a[i].get_creditor_id(), a[i].get_debtor_id(),
+              a[i].get_amount(), a[i].get_title())
+    # print(list_records().keys(), list_records().items().get_title())
 
-    if command[1] == "-m":
-        whatever = int(whatever)
+    # print(list_records().keys(), list_records().items().get_creditor_id())
 
-    await ctx.send(replace(index, command[1], whatever, myself))
+    # print(list_records().keys(), list_records().items().get_debtor_id())
+    return
+    # await ctx.send("why")
 
 
 @bot.command()
@@ -282,28 +148,32 @@ async def remove(ctx: Context):
     '''
     to remove a certain record
     '''
-    myself = find_myself(str(ctx.author))
-    if myself.name == "":
-        await ctx.send("there is no user data of you."
-                       "if you want to register, please type`$new`")
-        return
 
-    # [1]=name,[2]=amount,[3]=info
     command: list = (str(ctx.message.content)).split()
-    if len(command) != 4:
+    if len(command) != 2:
         await ctx.send("there are some information missing, please type the instruction again")
         return
 
-    # remove from records
-    for i, user in enumerate(myself.records):
-        if user.debtor == command[1] and user.amount == int(command[2]) and user.info == command[3]:
-            # modify $check
-            myself.debtors[user.debtor] -= user.amount
-            myself.records.pop(i)
-            await ctx.send("remove successfully")
-            return
+    # record: Record = find_record(int(command[1]))
+    delete_record(int(command[1]))
 
-    await ctx.send("there is no data")
+    await ctx.send("delete successfully")
+
+
+@bot.command()
+async def clear(ctx: Context):
+    '''
+    to clear a certain record
+    '''
+    command: list = (str(ctx.message.content)).split()
+    if len(command) != 2:
+        await ctx.send("there are some information missing, please type the instruction again")
+        return
+
+    # record: Record = find_record(int(command[1]))
+    delete_record(int(command[1]))
+
+    await ctx.send("delete successfully")
 
 
 @bot.command()
