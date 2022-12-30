@@ -65,6 +65,7 @@ def update_records(record: Record) -> None:
     except:
         pass
     return None
+    return None
 
 
 def dict_to_record(data):  # 轉換成record格式
@@ -78,4 +79,6 @@ def dict_to_record(data):  # 轉換成record格式
     created_on = data["created_on"]
     cleared_on = data["cleared_on"]
     modified_on = data["modified_on"]
+    return Record(creditor_id, debtor_id, amount, title, detail, due_date, record_id, created_on, cleared_on, modified_on)
+
     return Record(creditor_id, debtor_id, amount, title, detail, due_date, record_id, created_on, cleared_on, modified_on)
