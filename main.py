@@ -20,15 +20,12 @@ from test.mock_utils import reset, add_record, delete_record, list_records, find
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="$", intents=intents)
-# all_users: list[User] = list()  # store all the Users
 
 
 @bot.command()
 async def add(ctx: Context):
     '''
     to make a new record
-    $add <debtor-id> <amount> <title> [detail]
-    $add @TYK 900 玩具
     '''
     command: list = (str(ctx.message.content)).split()
     if len(command) < 4:
@@ -52,20 +49,14 @@ async def add(ctx: Context):
 
     toClient: str = "%s $%i %s %s borrowed from %s" % (str(datetime.date.today()), new_record.get_amount(
     ), new_record.get_title(), ("<@"+str(new_record.get_debtor_id())+">"), ("<@"+str(new_record.get_creditor_id())+">"))
-    # record.date + "  $" + str(record.amount)+"  "+record.info+"  "+record.debtor+" borrowed from "+all_users[i].user_id
+
     add_record(new_record)
     print(list_records())
-    # print(list_records().keys(), list_records().values()[0].get_amount())
-    # print()
+
     a = list(list_records().values())
     for i in range(len(a)):
         print(a[i].get_creditor_id(), a[i].get_debtor_id(),
               a[i].get_amount(), a[i].get_title())
-    # print(list_records().keys(), list_records().values())
-
-    # print(list_records().keys(), list_records().items().get_creditor_id())
-
-    # print(list_records().keys(), list_records().items().get_debtor_id())
 
     await ctx.send(toClient)
     return
@@ -93,7 +84,6 @@ async def modify(ctx: Context):
     can modify name, amount of money, or item info
     '''
 
-    # checkUserExist()
     # [1]=record ID,[2]= name/amount/info,[3]= value
     command: list = (str(ctx.message.content)).split()
     if len(command) != 4:
@@ -136,13 +126,8 @@ async def modify(ctx: Context):
     for i in range(len(a)):
         print(a[i].get_creditor_id(), a[i].get_debtor_id(),
               a[i].get_amount(), a[i].get_title())
-    # print(list_records().keys(), list_records().items().get_title())
 
-    # print(list_records().keys(), list_records().items().get_creditor_id())
-
-    # print(list_records().keys(), list_records().items().get_debtor_id())
     return
-    # await ctx.send("why")
 
 
 @bot.command()
@@ -156,7 +141,6 @@ async def remove(ctx: Context):
         await ctx.send("there are some information missing, please type the instruction again?")
         return
 
-    # record: Record = find_record(int(command[1]))
     delete_record(int(command[1]))
 
     await ctx.send("delete successfully")
@@ -167,15 +151,16 @@ async def clear(ctx: Context):
     '''
     to clear a certain record
     '''
+
     command: list = (str(ctx.message.content)).split()
     if len(command) != 2:
         await ctx.send("there are some information missing, please type the instruction again...")
         return
 
-    # record: Record = find_record(int(command[1]))
-    delete_record(int(command[1]))
+    record: Record = find_record(int(command[1]))
+    record.clear()
 
-    await ctx.send("delete successfully")
+    await ctx.send("clear successfully")
 
 
 @bot.command()
