@@ -7,16 +7,16 @@ from discord.ext import commands
 
 
 @commands.command()
-async def add(ctx: Context, *args: str):
+async def add(ctx: Context):
     """
-    Usage: `add <record-id> <amount> <info> [detail]`
+    Usage: `add <debtor-id> <amount> <title> [detail]`
 
     Description: Adds a new record into the database.
     """
 
 
 @commands.command()
-async def remove(ctx: Context, *args: str):
+async def remove(ctx: Context):
     """
     Usage: `remove <record-id>`
 
@@ -25,7 +25,7 @@ async def remove(ctx: Context, *args: str):
 
 
 @commands.command()
-async def modify(ctx: Context, *args: str):
+async def modify(ctx: Context):
     """
     Usage: `modify <record-id> <name|amount|info> <value>`
 
@@ -34,7 +34,7 @@ async def modify(ctx: Context, *args: str):
 
 
 @commands.command()
-async def clear(ctx: Context, *args: str):
+async def clear(ctx: Context):
     """
     Usage: `clear <record-id>`
 
