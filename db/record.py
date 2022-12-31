@@ -18,7 +18,7 @@ class Record:
                  amount: int, title: str, detail: str = "",
                  due_date: str | None = None,
                  record_id: int | None = None,
-                 created_on: str | None = None,
+                 created_on: str = str(date.today()),
                  cleared_on: str | None = None,
                  modified_on: str | None = None):
         self._creditor_id = creditor_id
@@ -30,7 +30,7 @@ class Record:
         self._record_id = record_id
         self._created_on = created_on
         self._cleared_on = cleared_on
-        self._modified_on = modified_on
+        self._modified_on = modified_on if modified_on else created_on
 
     def get_creditor_id(self) -> int:
         return self._creditor_id
@@ -71,11 +71,9 @@ class Record:
     def clear(self) -> None:
         self._cleared_on = str(date.today())
 
-    def record_to_dict(self):  # 轉換成資料庫上傳格式
+    def to_dict(self):  # 轉換成資料庫上傳格式
         data = self.__dict__
         res: dict[str, Any] = {key[1:]: value for key, value in data.items()}
-        # for key, value in data.items():
-        #     res[key[1:]] = value
         res.pop('record_id')
         res.pop('created_on')
         res.pop('due_date')
@@ -83,8 +81,12 @@ class Record:
         res.pop('cleared_on')
         return res
 
-    def record_to_dict_full(self):  # 轉換成資料庫上傳格式
+    def to_dict_full(self):  # 轉換成資料庫上傳格式
         return {key[1:]: value for key, value in self.__dict__.items()}
+
+    def to_discord_message(self):
+        return (f"{self._modified_on} {self._amount} {self._title}"
+                f"<@{self._debtor_id}> borrowed from <@{self._creditor_id}>")
 
     def __eq__(self, __o: object) -> bool:
         return self.__dict__ == __o.__dict__
