@@ -4,7 +4,7 @@ test real DB
 
 from datetime import date
 
-from db.utils import add_record, creditor_records, delete_record, update_records, find_record
+from db.utils import add_record, creditor_records, delete_record, update_record, find_record
 
 from db.record import Record
 
@@ -35,6 +35,6 @@ def test_update():
     add_record(data)
     before = creditor_records(345)
     before[-1].clear()
-    update_records(before[-1])
+    update_record(before[-1])
     after = find_record(before[-1].get_record_id())
     assert after.__dict__["_cleared_on"] == str(date.today())

@@ -9,8 +9,15 @@ from discord import Intents
 from discord.ext import commands
 from discord.ext.commands import Context
 
-from db import Record, add_record, creditor_records, debtor_records, find_record, delete_record, update_record
-
+from db import (
+    Record,
+    add_record,
+    delete_record,
+    find_record,
+    creditor_records,
+    debtor_records,
+    update_record,
+)
 
 intents = Intents.default()
 intents.message_content = True
@@ -99,7 +106,11 @@ async def modify(ctx: Context):
         await ctx.send("there are some information missing, please type the instruction again")
         return
 
-    record: Record = find_record(int(command[1]))
+    record = find_record(int(command[1]))
+
+    if not record:
+        await ctx.send("no record found with the given ID")
+        return
 
     whatever = command[3]  # store name or amount or info
 
@@ -143,6 +154,10 @@ async def remove(ctx: Context):
 
     record = find_record(int(command[1]))
 
+    if not record:
+        await ctx.send("no record found with the given ID")
+        return
+
     if record.get_creditor_id() != ctx.message.author.id:
         await ctx.send("only the creditor can remove debts")
         return
@@ -163,7 +178,11 @@ async def clear(ctx: Context):
         await ctx.send("there are some information missing, please type the instruction again")
         return
 
-    record: Record = find_record(int(command[1]))
+    record = find_record(int(command[1]))
+
+    if not record:
+        await ctx.send("no record found with the given ID")
+        return
 
     if record.get_creditor_id() != ctx.message.author.id:
         await ctx.send("only the creditor can clear debts")

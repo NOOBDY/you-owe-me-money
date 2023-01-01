@@ -1,6 +1,8 @@
 """
 utils module
 """
+
+from typing import Any
 from os import environ
 
 from supabase.client import Client
@@ -12,7 +14,7 @@ url = environ["SUPABASE_URL"]
 key = environ["SUPABASE_API_KEY"]
 supabase = Client(url, key)
 
-table = "Prod Record"
+table = "Test Record"
 
 
 def add_record(record: Record) -> None:
@@ -26,16 +28,17 @@ def delete_record(record_id: int) -> None:
      .execute())
 
 
-def find_record(record_id: int) -> Record:
-    try:
-        res = supabase.table(table).select("*").filter("record_id", "eq", str(record_id)).execute().data
-        print(res)
-        if len(res) == 0:
-            return None
-        return dict_to_record(res[0])
-    except:
-        pass
-    return None
+def find_record(record_id: int) -> Record | None:
+    records: list[dict[str, Any]] = (supabase.table(table)
+                                     .select("*")
+                                     .filter("record_id", "eq", str(record_id))
+                                     .execute()
+                                     .data)
+
+    if len(records) == 0:
+        return None
+
+    return dict_to_record(records[0])
 
 
 def creditor_records(creditor_id: int) -> list[Record]:
@@ -61,7 +64,7 @@ def update_record(record: Record) -> None:
      .execute())
 
 
-def dict_to_record(data):  # 轉換成record格式
+def dict_to_record(data: dict[str, Any]):  # 轉換成record格式
     return Record(
         data["creditor_id"],
         data["debtor_id"],
