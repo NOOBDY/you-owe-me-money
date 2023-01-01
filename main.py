@@ -112,7 +112,7 @@ async def modify(ctx: Context):
         await ctx.send("no record found with the given ID")
         return
 
-    whatever = command[3]  # store name or amount or info
+    arg = command[3]  # store name or amount or info
 
     if command[2] == "name":
         if len(ctx.message.mentions) == 1:
@@ -123,14 +123,14 @@ async def modify(ctx: Context):
         record.set_debtor_id(member_id)
 
     elif command[2] == "amount":
-        if not whatever.isdigit():
+        if not arg.isdigit():
             await ctx.send("the amount of money is invalid")
             return
 
-        record.set_amount(int(whatever))
+        record.set_amount(int(arg))
 
-    elif command[2] == "info":
-        record.set_title(whatever)
+    elif command[2] == "title":
+        record.set_title(arg)
 
     else:
         await ctx.send("we don't know what you want to modify")
@@ -212,7 +212,7 @@ async def usage(ctx: Context):
 
     `owe`
 
-    `modify <record-id> <debtor|amount|amount> <value>`
+    `modify <record-id> <debtor|amount|title> <value>`
 
     `clear <record-id>`
 
