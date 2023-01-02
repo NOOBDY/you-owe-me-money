@@ -14,7 +14,7 @@ url = environ["SUPABASE_URL"]
 key = environ["SUPABASE_API_KEY"]
 supabase = Client(url, key)
 
-TABLE = "Prod Record"
+TABLE = environ["SUPABASE_TABLE"]
 
 
 def add_record(record: Record) -> None:
