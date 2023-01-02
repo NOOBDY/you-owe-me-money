@@ -21,10 +21,11 @@ from db import (
 
 intents = Intents.default()
 intents.message_content = True
-command_prefix = "$"
+
+PREFIX = "$"
 
 bot = commands.Bot(
-    command_prefix=command_prefix,
+    command_prefix=PREFIX,
     intents=intents,
     help_command=None
 )
@@ -47,7 +48,7 @@ async def add(ctx: Context):
         await ctx.send("wrong user mention")
         return
 
-    if len(msg.mentions) == 2 and msg.mentions[1] != msg.author.id:
+    if len(msg.mentions) == 2 and msg.mentions[0].id != msg.author.id:
         await ctx.send("only the creditor or the debtor can create records")
         return
 
@@ -78,7 +79,12 @@ async def own(ctx: Context):
 
     author_id = ctx.message.author.id
 
-    for record in creditor_records(author_id):
+    records = creditor_records(author_id)
+
+    if len(records) == 0:
+        await ctx.send("no records found")
+
+    for record in records:
         await ctx.send(f"#{record.get_record_id()} {record.to_discord_message()}")
 
 
@@ -90,7 +96,12 @@ async def owe(ctx: Context):
 
     author_id = ctx.message.author.id
 
-    for record in debtor_records(author_id):
+    records = debtor_records(author_id)
+
+    if len(records) == 0:
+        await ctx.send("no records found")
+
+    for record in records:
         await ctx.send(f"#{record.get_record_id()} {record.to_discord_message()}")
 
 
@@ -202,7 +213,7 @@ async def usage(ctx: Context):
     '''
 
     total = dedent(f"""
-    command prefix: `{command_prefix}`
+    command prefix: `{PREFIX}`
     required field: `<>`
     optional field: `[]`
 
