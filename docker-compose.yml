@@ -5,7 +5,9 @@ services:
     build: .
     image: you-owe-me-money
     environment:
-      - DISCORD_BOT_TOKEN=${TOKEN}
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
+      - SUPABASE_API_KEY=${SUPABASE_API_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
     volumes:
       - .:/opt/apps/discord-bot
     container_name: discord-bot

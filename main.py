@@ -2,24 +2,33 @@
 discord bot for almost all the functions
 '''
 
-import datetime
-import asyncio
 from textwrap import dedent
 from os import environ
 
+from discord import Intents
 from discord.ext import commands
 from discord.ext.commands import Context
-from discord import Message
-import discord
 
-import command
-from db.record import Record
-from test.mock_utils import reset, add_record, delete_record, list_records, find_record
+from db import (
+    Record,
+    add_record,
+    delete_record,
+    find_record,
+    creditor_records,
+    debtor_records,
+    update_record,
+)
 
-
-intents = discord.Intents.default()
+intents = Intents.default()
 intents.message_content = True
-bot = commands.Bot(command_prefix="$", intents=intents)
+
+PREFIX = "$"
+
+bot = commands.Bot(
+    command_prefix=PREFIX,
+    intents=intents,
+    help_command=None
+)
 
 
 @bot.command()
@@ -27,55 +36,73 @@ async def add(ctx: Context):
     '''
     to make a new record
     '''
-    command: list = (str(ctx.message.content)).split()
+    msg = ctx.message
+
+    command: list = (str(msg.content)).split()
     if len(command) < 4:
         await ctx.send("there are some information missing, please type the instruction again.")
         return
 
     # check if the second is userID
-    if len(ctx.message.mentions) == 1:
-        member_id = (ctx.message.mentions[0]).id
-    else:
-        await ctx.send("please tag only the user to store the information of debtor")
+    if len(msg.mentions) < 1 or len(msg.mentions) > 2:
+        await ctx.send("wrong user mention")
         return
 
-    if not command[2].isdigit():
-        print(type(command[2]))
+    if len(msg.mentions) == 2 and msg.mentions[0].id != msg.author.id:
+        await ctx.send("only the creditor or the debtor can create records")
+        return
+
+    if not command[len(msg.mentions) + 1].isdigit():
         await ctx.send("the amount of money is invalid")
         return
 
-    new_record: Record = Record(
-        ctx.message.author.id, member_id, int(command[2]), command[3])
+    debtor_id = msg.mentions[0].id
+    creditor_id = msg.author.id if len(msg.mentions) == 1 else msg.mentions[1].id
 
-    toClient: str = "%s $%i %s %s borrowed from %s" % (str(datetime.date.today()), new_record.get_amount(
-    ), new_record.get_title(), ("<@"+str(new_record.get_debtor_id())+">"), ("<@"+str(new_record.get_creditor_id())+">"))
+    record: Record = Record(
+        creditor_id,
+        debtor_id,
+        int(command[len(msg.mentions) + 1]),
+        " ".join(command[len(msg.mentions) + 2:])
+    )
 
-    add_record(new_record)
-    print(list_records())
+    add_record(record)
 
-    a = list(list_records().values())
-    for i in range(len(a)):
-        print(a[i].get_creditor_id(), a[i].get_debtor_id(),
-              a[i].get_amount(), a[i].get_title())
-
-    await ctx.send(toClient)
-    return
+    await ctx.send(record.to_discord_message())
 
 
 @bot.command()
-async def to_me(ctx: Context):
+async def own(ctx: Context):
     '''
     who borrowed money from me
     '''
-    ...
+
+    author_id = ctx.message.author.id
+
+    records = creditor_records(author_id)
+
+    if len(records) == 0:
+        await ctx.send("no records found")
+
+    for record in records:
+        await ctx.send(f"#{record.get_record_id()} {record.to_discord_message()}")
 
 
 @bot.command()
-async def to_others(ctx: Context):
+async def owe(ctx: Context):
     '''
     I borrowed money form whom
     '''
-    ...
+
+    author_id = ctx.message.author.id
+
+    records = debtor_records(author_id)
+
+    if len(records) == 0:
+        await ctx.send("no records found")
+
+    for record in records:
+        await ctx.send(f"#{record.get_record_id()} {record.to_discord_message()}")
 
 
 @bot.command()
@@ -90,10 +117,15 @@ async def modify(ctx: Context):
         await ctx.send("there are some information missing, please type the instruction again")
         return
 
-    record: Record = find_record(int(command[1]))
+    record = find_record(int(command[1]))
 
-    whatever = command[3]  # store name or amount or info
-    if (command[2] == "name"):
+    if not record:
+        await ctx.send("no record found with the given ID")
+        return
+
+    arg = command[3]  # store name or amount or info
+
+    if command[2] == "name":
         if len(ctx.message.mentions) == 1:
             member_id = (ctx.message.mentions[0]).id
         else:
@@ -101,31 +133,21 @@ async def modify(ctx: Context):
             return
         record.set_debtor_id(member_id)
 
-    elif (command[2] == "amount"):
-        if not whatever.isdigit():
+    elif command[2] == "amount":
+        if not arg.isdigit():
             await ctx.send("the amount of money is invalid")
             return
-        else:
-            whatever = int(whatever)
-        record.set_amount(whatever)
 
-    elif (command[2] == "info"):
-        record.set_title(whatever)
+        record.set_amount(int(arg))
+
+    elif command[2] == "title":
+        record.set_title(arg)
 
     else:
         await ctx.send("we don't know what you want to modify")
         return
 
-    toClient: str = "modified:\n%s $%i %s %s borrowed from %s" % (str(datetime.date.today()), record.get_amount(
-    ), record.get_title(), ("<@"+str(record.get_debtor_id())+">"), ("<@"+str(record.get_creditor_id())+">"))
-
-    await ctx.send(toClient)
-
-    print(list_records())
-    a = list(list_records().values())
-    for i in range(len(a)):
-        print(a[i].get_creditor_id(), a[i].get_debtor_id(),
-              a[i].get_amount(), a[i].get_title())
+    await ctx.send(record.to_discord_message())
 
     return
 
@@ -138,7 +160,17 @@ async def remove(ctx: Context):
 
     command: list = (str(ctx.message.content)).split()
     if len(command) != 2:
-        await ctx.send("there are some information missing, please type the instruction again?")
+        await ctx.send("there are some information missing, please type the instruction again")
+        return
+
+    record = find_record(int(command[1]))
+
+    if not record:
+        await ctx.send("no record found with the given ID")
+        return
+
+    if record.get_creditor_id() != ctx.message.author.id:
+        await ctx.send("only the creditor can remove debts")
         return
 
     delete_record(int(command[1]))
@@ -154,63 +186,51 @@ async def clear(ctx: Context):
 
     command: list = (str(ctx.message.content)).split()
     if len(command) != 2:
-        await ctx.send("there are some information missing, please type the instruction again...")
+        await ctx.send("there are some information missing, please type the instruction again")
         return
 
-    record: Record = find_record(int(command[1]))
+    record = find_record(int(command[1]))
+
+    if not record:
+        await ctx.send("no record found with the given ID")
+        return
+
+    if record.get_creditor_id() != ctx.message.author.id:
+        await ctx.send("only the creditor can clear debts")
+        return
+
     record.clear()
+
+    update_record(record)
 
     await ctx.send("clear successfully")
 
 
-@bot.command()
-async def how(ctx: Context):
+@bot.command(aliases=["help"])
+async def usage(ctx: Context):
     '''
     let user knows how to use these instructions
     '''
-    total = dedent("""
-    ```yaml
-    $new
-    ```
-    for register to a new user, just type it
 
-    ```yaml
-    $record {@user} {Money} {item}
-    ```
-    for appending a new record of you lent other people money,type with the format up above
-    for example, $record @you-owe-me-money 100 dinner
+    total = dedent(f"""
+    command prefix: `{PREFIX}`
+    required field: `<>`
+    optional field: `[]`
 
-    ```yaml
-    $check
-    ```
-    for checking the total amount money of each person who had borrowed from you, just type it
+    `add <debtor> [creditor] <amount> <title>`
 
-    ```yaml
-    $modify {-flag} {@user} {Money} {item}
-    ```
-    you can modify your record by typing this, the flag can be
+    `own`
 
-    -m, which means you want to change the amount of money
+    `owe`
 
-    -n, which means you want to change the debtor's name
+    `modify <record-id> <debtor|amount|title> <value>`
 
-    -i, which means you want to change to info of the item
+    `clear <record-id>`
 
-
-    and the last three must be the same to the record that you want to modify,
-    otherwise it can't find the record, nothing will be modified
-
-    next, the robot will ask you to type the correct information so that
-    the record will be the correct one
-
-    ```yaml
-    $remove {@user} {Money} {item}
-    ```
-    for removing a certain record, just type the record the the last three information correctly, otherwise the robot can't
-    find the record, there is no record will be removed
-    you can use $check you check whether it is removed or not
+    `remove <record-id>`
     """)
 
     await ctx.send(total)
 
-bot.run(environ["DISCORD_BOT_TOKEN"])
+if __name__ == "__main__":
+    bot.run(environ["DISCORD_BOT_TOKEN"])

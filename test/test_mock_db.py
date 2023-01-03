@@ -1,5 +1,5 @@
 """
-test record
+test mock DB
 """
 
 from db.record import Record
